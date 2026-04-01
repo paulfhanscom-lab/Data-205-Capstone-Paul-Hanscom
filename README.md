@@ -5,10 +5,10 @@ This Project explores the relationship between crash data and weather data in mo
 R(RStudio)
 ## Project Structure
 This repository contains
-* data/
-* ingestion/
-* eda/
-* analysis/
-* reports/
+* data/ - raw and processed data
+* ingestion/ - code for data processing
+* eda/ - exploratory data analysis
+* analysis/ - modeling and visualizing 
+* reports/ - final outcomes and presentation
 ## Author
 Paul Hanscom
