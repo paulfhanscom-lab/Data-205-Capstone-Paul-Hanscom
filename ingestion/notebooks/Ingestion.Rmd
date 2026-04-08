@@ -3,3 +3,55 @@ title: "Ingestion"
 output: html_document
 ---
 
+```{r}
+#load tidyverse and lubridate libraries
+library(tidyverse)
+library(lubridate)
+
+```
+
+
+```{r}
+#set working directory to where data is stored
+setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/data/raw")
+
+#read the primary dataset
+Maryland_Weather <- read_csv("MarylandWeatherData.csv")
+
+#filter the data to only include rows from stations in Montgomery county
+Maryland_Weather$filter <-grepl('US1MDMG', Maryland_Weather$STATION, fixed=TRUE)
+Montgomery_Weather <- Maryland_Weather |> filter(filter == TRUE)
+
+#select only the variables necessary for visualization 
+Weather_Cleaned <- Montgomery_Weather[,c(3,4,6,11)]
+
+#unify capitalization of variable names
+colnames(Weather_Cleaned) <- tolower(colnames(Weather_Cleaned))
+
+#Save cleaned dataset
+#setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/data/processed")
+#write.csv(Weather_Cleaned, file = "CleanedWeatherData.csv", row.names = FALSE)
+```
+```{r}
+#Load raw external data from local computer
+setwd("~/Capstone Project/Data")
+Crash <- read_csv("Crash_Reporting_-_Incidents_Data_20260211.csv")
+
+#Change the date variable to match formatting ofmain dataset filter for only the year 2025
+Crash <- Crash |> rename("Date" = "Crash Date/Time")
+Crash$Date <- format(as.POSIXct(Crash$Date, format = "%m/%d/%Y %H:%M:%S %p"),
+format = "%Y-%m-%d")
+Crash$year <- year(Crash$Date) 
+Crash25 <- filter(Crash, year == 2025)
+
+#select only the variables necessary for visualization 
+Crash_Cleaned <- Crash25[,c(1,5,22,35,36)]
+
+#unify capitalization
+colnames(Crash_Cleaned) <- tolower(colnames(Crash_Cleaned))
+
+#Save cleaned dataset
+setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/data/external")
+write.csv(Crash_Cleaned, file = "CleanedCrashData.csv", row.names = FALSE)
+```
+
