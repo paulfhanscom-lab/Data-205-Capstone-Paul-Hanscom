@@ -3,3 +3,49 @@ title: "Analysis"
 output: html_document
 ---
 
+```{r}
+library(tidyverse)
+library(dplyr)
+```
+
+```{r}
+#upload crash data then create new dataset which is just the number of crashes for a given day
+setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/data/external")
+Crash <- read.csv("CleanedCrashData.csv")
+Crash_Count <- Crash |>
+  count(date, name = "count") 
+
+#upload weather data then create new dataset of daily precipitation averages
+setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/data/processed")
+Weather <- read.csv("CleanedWeatherData.csv")
+Avg_Prcp <- Weather |>
+  group_by(date) |>
+  summarise(avg_prcp = mean(totalprcp)) |> 
+  ungroup()   
+
+#merge two new datasets based on date.
+Crash_Prcp <- merge(Crash_Count, Avg_Prcp, by = "date")
+```
+```{r}
+# graph average precipitation vs number of crashes
+p1 <- ggplot(Crash_Prcp, aes(x = count,y = log10(avg_prcp)))+
+  geom_point()+
+  geom_smooth(method = "lm", se = TRUE, color = "red", linetype = "solid")+
+  labs(
+    title = "Number of Crashes Vs Log of Average Percipitation",
+    x = "Number of Crashes",
+    y = "Log Average Percipitiation"
+  ) +
+  theme_minimal()
+p1
+#save graph to github
+setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/analysis/images")
+ggsave("AvgPrcp_vs_NumCrashes.png", plot = p1, width = 8, height = 6)
+```
+```{r}
+#Conduct correlation test
+result <- cor.test(Crash_Prcp$count, Crash_Prcp$avg_prcp)
+
+print(result)
+```
+

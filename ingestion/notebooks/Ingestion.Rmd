@@ -22,8 +22,15 @@ Maryland_Weather <- read_csv("MarylandWeatherData.csv")
 Maryland_Weather$filter <-grepl('US1MDMG', Maryland_Weather$STATION, fixed=TRUE)
 Montgomery_Weather <- Maryland_Weather |> filter(filter == TRUE)
 
+#replace NAs with the baseline assumption of zero percipitation
+Montgomery_Weather$SNOW[is.na(Montgomery_Weather$SNOW)] <- 0
+Montgomery_Weather$PRCP[is.na(Montgomery_Weather$PRCP)] <- 0
+
+#combine prcp and snow variables to create new variable total prcp
+Montgomery_Weather$totalprcp <- Montgomery_Weather$PRCP + Montgomery_Weather$SNOW
+
 #select only the variables necessary for visualization 
-Weather_Cleaned <- Montgomery_Weather[,c(3,4,6,11)]
+Weather_Cleaned <- Montgomery_Weather[,c(3,4,6,26)]
 
 #unify capitalization of variable names
 colnames(Weather_Cleaned) <- tolower(colnames(Weather_Cleaned))
@@ -52,6 +59,6 @@ colnames(Crash_Cleaned) <- tolower(colnames(Crash_Cleaned))
 
 #Save cleaned dataset
 setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/data/external")
-write.csv(Crash_Cleaned, file = "CleanedCrashData.csv", row.names = FALSE)
+#write.csv(Crash_Cleaned, file = "CleanedCrashData.csv", row.names = FALSE)
 ```
 
