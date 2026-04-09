@@ -6,6 +6,7 @@ output: html_document
 ```{r}
 #load libraries
 library(tidyverse)
+library(lubridate)
 ```
 
 ```{r}
@@ -46,5 +47,31 @@ p2 <- ggplot(Weather,aes(log10(totalprcp)))+
 p2
 setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/eda/images")
 ggsave("totalprcp_histogram_logscaled.png", plot = p2, width = 8, height = 6)
+```
+
+```{r}
+#Show head structure of Crash Data
+head(Crash)
+str(Crash)
+```
+```{r}
+#make new dataset of number of crashes per day
+Crash_Count <- Crash |>
+  count(date, name = "numcrash") 
+
+#createline graph to analyse crash data over time
+p3 <- ggplot(Crash_Count)+
+  geom_line(aes(x = as.numeric(as.Date(date)), y = numcrash))+
+  scale_x_continuous(labels = function(x) format(as.Date(x, origin = "1970-01-01"), "%Y-%m-%d")) +
+  labs(
+    title = "Crashes Vs Time",
+    x = "Time",
+    y = "Crashes"
+  ) 
+
+p3
+setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/eda/images")
+ggsave("crash_vs_time_line.png", plot = p3, width = 40, height = 6)
+
 ```
 
