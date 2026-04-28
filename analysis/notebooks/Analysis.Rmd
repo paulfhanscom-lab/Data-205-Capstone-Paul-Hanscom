@@ -5,13 +5,6 @@ output: html_document
 
 ```{r}
 library(tidyverse)
-library(gstat)
-library(sp)
-library(raster)
-library(leaflet)
-library(tigris)
-library(webshot2)
-library(mapview)
 
 ```
 
@@ -55,60 +48,3 @@ result <- cor.test(Crash_Prcp$count, Crash_Prcp$avg_prcp)
 
 print(result)
 ```
-
-```{r}
-MapWeather <- function(weather_data,crash_data, day){
-  day_weather <- weather_data |> filter(date == day)
-  coordinates(day_weather)<-~longitude+latitude
-  
-  day_crash <- crash_data |> filter(date==day)
-  
-  options(tigris_class = "sf")
-  montgomery <- counties(state = "24", cb = TRUE, year = 2022) |>
-  filter(NAME == "Montgomery")
-  
-  grd <- expand.grid(
-  x = seq(-77.9, -76.9, by = 0.001),
-  y = seq(38.8, 39.5, by = 0.001)  
-  )
-  coordinates(grd) <- ~x + y
-  gridded(grd) <- TRUE
-  
-  variogram_model <- variogram(totalprcp ~ 1, data = day_weather)
-  fitted_model <- fit.variogram(variogram_model, model = vgm("Sph"))
-  
-  
-  kriging_result <- krige(totalprcp ~ 1, locations = day_weather, newdata = grd, model = fitted_model)
-
-  kriging_raster <- raster(kriging_result)
-  
-  crs(kriging_raster) <- "EPSG:4326"
-  
-  raster_mont <- mask(kriging_raster, montgomery)
-  
-  
-  pal <- colorNumeric(
-  palette = "Blues",  
-  domain = values(raster_mont),    
-  na.color = "transparent"
-)
-
-  m <- leaflet() |>
-  setView(lng = -77.20, lat = 39.14, zoom =10) |>
-  addTiles() |>
-  addRasterImage(raster_mont, opacity = 0.7, project = TRUE, colors = pal)|>
-  addCircles(data = day_crash,opacity = 0.9, color = "Black")
-  
-  setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/analysis/images/maps")
-  mapview::mapshot2(m, "temp.html")
-  webshot2::webshot("temp.html", file = paste0(day, '.png'))
-  
-}
-```
-
-
-```{r}
-MapWeather(Weather_Cleaned,Crash, "2025-01-01")
-
-```
-
