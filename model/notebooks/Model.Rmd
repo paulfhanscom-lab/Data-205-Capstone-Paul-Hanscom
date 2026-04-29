@@ -7,6 +7,7 @@ output: html_document
 library(tidyverse)
 library(gstat)
 library(sp)
+library(sf)
 library(raster)
 library(leaflet)
 library(tigris)
@@ -24,57 +25,105 @@ Weather <- read.csv("CleanedWeatherData.csv")
 
 
 ```{r}
-MapWeather <- function(weather_data,crash_data, day){
-  day_weather <- weather_data |> filter(date == day)
-  coordinates(day_weather)<-~longitude+latitude
+MapWeather <- function(dates, weather_data,crash_data){
+  day_weather <- weather_data |> filter(date == dates)
+  day_weather <- st_as_sf(
+  day_weather,
+  coords = c("longitude", "latitude"),
+  crs = 4326
+  )
+  day_weather <- st_transform(day_weather, 32618)
   
-  day_crash <- crash_data |> filter(date==day)
+  day_weather$totalprcp[day_weather$totalprcp == 0] <- 0.0000001
+  
+  day_crash <- crash_data |> filter(date==dates)
   
   options(tigris_class = "sf")
   montgomery <- counties(state = "24", cb = TRUE, year = 2022) |>
-  filter(NAME == "Montgomery")
+  filter(NAME == "Montgomery") |>
+  st_transform(32618)
   
-  grd <- expand.grid(
-  x = seq(-77.9, -76.9, by = 0.003),
-  y = seq(38.8, 39.5, by = 0.003)  
-  )
-  coordinates(grd) <- ~x + y
-  gridded(grd) <- TRUE
-  
-  variogram_model <- variogram(totalprcp ~ 1, data = day_weather)
-  fitted_model <- fit.variogram(variogram_model, model = vgm("Sph"))
-  
-  
-  kriging_result <- krige(totalprcp ~ 1, locations = day_weather, newdata = grd, model = fitted_model)
+  grd <- st_make_grid(
+  montgomery, 
+  cellsize = 300,  
+  what = "centers"
+  ) |> st_sf()
 
-  kriging_raster <- raster(kriging_result)
   
-  crs(kriging_raster) <- "EPSG:4326"
   
-  raster_mont <- mask(kriging_raster, montgomery)
   
+  variogram_model <- variogram(log(totalprcp) ~ 1, data = day_weather)
+  
+  fitted_model <- fit.variogram(variogram_model, vgm(psill = 0.5, model = "Sph",    range = 20000, nugget = 0.1))
+  
+  
+  
+  
+  kriging_result <- krige(log(totalprcp) ~ 1, locations = day_weather, newdata = grd, model = fitted_model, nmax = 30)
+  
+
+  kriging_df <- as.data.frame(kriging_result)
+
+  # Check column names once:
+  names(kriging_df)
+  coords <- sf::st_coordinates(kriging_result)
+
+  kriging_df$x <- coords[,1]
+  kriging_df$y <- coords[,2]
+
+  kriging_raster <- raster::rasterFromXYZ(
+    kriging_df[, c("x", "y", "var1.pred")]
+  )
+  
+  crs(kriging_raster) <- "EPSG:32618"
+  
+  kriging_raster <- raster::projectRaster(
+  kriging_raster,
+  crs = "+proj=longlat +datum=WGS84"
+  )
+  
+  montgomery_ll <- st_transform(montgomery, 4326)
+  montgomery_sp <- as(montgomery_ll, "Spatial")
+
+  raster_mont <- mask(kriging_raster, montgomery_sp)
   
   pal <- colorNumeric(
   palette = "Blues",  
-  domain = values(raster_mont),    
+  domain = c(-3,1),    
   na.color = "transparent"
 )
 
+  
   m <- leaflet() |>
   setView(lng = -77.20, lat = 39.14, zoom =10) |>
   addTiles() |>
   addRasterImage(raster_mont, opacity = 0.7, project = TRUE, colors = pal)|>
-  addCircles(data = day_crash,opacity = 0.9, color = "Black")
+  addCircles(data = day_crash,opacity = 0.9, color = "Black")|>
+  addLegend(
+    pal = pal,
+    values = c(-3,-2,-1,0,1),
+    title = "Daily Precip (log10(In))",
+    position = "topleft"
+  )
   
-  setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/analysis/images/maps")
+  setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/model/images")
   mapview::mapshot2(m, "temp.html")
-  webshot2::webshot("temp.html", file = paste0(day, '.png'))
+  webshot2::webshot("temp.html", file = paste0(dates, '.png'))
   
 }
 ```
 
+```{r}
+#leaflet()|>
+  setView(lng = -77.20, lat = 39.14, zoom =10) |>
+  addTiles()|>
+  addMarkers(data = Weather)
+```
+
+
 
 ```{r}
-MapWeather(Weather_Cleaned,Crash, "2025-01-13")
-
+dates <- seq.Date(as.Date("2025-01-01"), as.Date("2025-01-31"), by = "day")
+  
+lapply(dates, \(d) suppressWarnings(MapWeather(d, Weather, Crash)))
 ```
