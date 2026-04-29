@@ -1,4 +1,4 @@
-# EDA
+# Data Ingestion
 ## Explanation
 For ingestion I loaded the dataset from my local computer and cleaned them.
 I filtered my weatherdataset to include infromation from stations in Montgomery county.
