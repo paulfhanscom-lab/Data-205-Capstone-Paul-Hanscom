@@ -29,11 +29,12 @@ Crash_Prcp <- merge(Crash_Count, Avg_Prcp, by = "date")
 # graph average precipitation vs number of crashes
 p1 <- ggplot(Crash_Prcp, aes(x = count,y = log10(avg_prcp)))+
   geom_point()+
-  geom_smooth(method = "lm", se = TRUE, color = "red", linetype = "solid")+
+  geom_smooth(method = "lm", se = TRUE, color = "Blue3", linetype = "solid")+
   labs(
-    title = "Number of Crashes Vs Log of Average Percipitation",
+    title = "Number of Crashes Vs Average Percipitation",
     x = "Number of Crashes",
-    y = "Log Average Percipitiation"
+    y = "Percipitation (Inch)",
+    caption = "data from NOAA and Data Montgomery"
   ) +
   theme_minimal()
 p1
