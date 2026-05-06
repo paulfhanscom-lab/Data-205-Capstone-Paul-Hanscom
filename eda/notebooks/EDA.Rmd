@@ -7,6 +7,9 @@ output: html_document
 #load libraries
 library(tidyverse)
 library(lubridate)
+library(leaflet)
+library(webshot2)
+library(mapview)
 ```
 
 ```{r}
@@ -73,5 +76,20 @@ p3
 setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/eda/images")
 ggsave("crash_vs_time_line.png", plot = p3, width = 40, height = 6)
 
+```
+
+```{r}
+#filter only one day to make it easier on the computer
+day_weather <- Weather |> filter(date == as.Date("2025-01-01"))
+#create map of location of weather stations
+m <- leaflet()|>
+  setView(lng = -77.20, lat = 39.14, zoom =10) |>
+  addTiles()|>
+  addCircles(data = day_weather, color = "Black", opacity = 1)
+#save to github
+  setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/eda/images")
+  mapview::mapshot2(m, "temp.html")
+  webshot2::webshot("temp.html", file = "weather_stations.png")
+  
 ```
 

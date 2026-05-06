@@ -113,17 +113,12 @@ MapWeather <- function(dates, weather_data,crash_data){
 }
 ```
 
-```{r}
-#leaflet()|>
-  setView(lng = -77.20, lat = 39.14, zoom =10) |>
-  addTiles()|>
-  addMarkers(data = Weather)
-```
-
-
 
 ```{r}
-dates <- seq.Date(as.Date("2025-03-00"), as.Date("2025-13-00"), by = "day")
+dates <- seq.Date(as.Date("2025-03-01"), as.Date("2025-13-01"), by = "day")
 
 lapply(dates, \(d) suppressWarnings(MapWeather(d, Weather, Crash)))
 ```
+
+
+
