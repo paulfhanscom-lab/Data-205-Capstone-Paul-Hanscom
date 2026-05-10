@@ -30,11 +30,10 @@ summary(Weather$totalprcp)
 #graph totalprcp variable and save to eda/images in github
 p1 <- ggplot(Weather,aes(totalprcp))+
   geom_histogram(fill = "blue", color = "blue3")+
-  labs(title = "Percipitation",
-    x = "Percipitation (In)", caption = "data from NOAA available https://www.ncei.noaa.gov/cdo-web/"
+  labs(title = "Precipitation",
+    x = "Precipitation (in)", caption = "data from NOAA available https://www.ncei.noaa.gov/cdo-web/"
   ) +
-  theme_minimal()+
-  theme(axis.title.y = element_blank())
+  theme_minimal()
 p1
 setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/eda/images")
 ggsave("totalprcp_histogram.png", plot = p1, width = 8, height = 6)
@@ -42,11 +41,10 @@ ggsave("totalprcp_histogram.png", plot = p1, width = 8, height = 6)
 #now do the same but log scale total prcp to reduce the effect of outliers on graph
 p2 <- ggplot(Weather,aes(log10(totalprcp)))+
   geom_histogram(fill = "blue", color = "blue3")+
-  labs(title = "Percipitation (log) distribution",
-    x = "Percipitiation (log(In))", caption = "data from NOAA available https://www.ncei.noaa.gov/cdo-web/"
+  labs(title = "Precipitation (log) distribution",
+    x = "Precipitiation (log(in))", caption = "data from NOAA available https://www.ncei.noaa.gov/cdo-web/"
   ) +
-  theme_minimal()+
-  theme(axis.title.y = element_blank())
+  theme_minimal()
 p2
 setwd("~/Data205/Data-205-Capstone-Paul-Hanscom/eda/images")
 ggsave("totalprcp_histogram_logscaled.png", plot = p2, width = 8, height = 6)
