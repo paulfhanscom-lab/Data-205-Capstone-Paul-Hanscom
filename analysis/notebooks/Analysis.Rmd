@@ -31,9 +31,9 @@ p1 <- ggplot(Crash_Prcp, aes(x = count,y = log10(avg_prcp)))+
   geom_point()+
   geom_smooth(method = "lm", se = TRUE, color = "Blue3", linetype = "solid")+
   labs(
-    title = "Number of Crashes Vs Average Percipitation",
+    title = "Number of Crashes Vs Average Precipitation",
     x = "Number of Crashes",
-    y = "Percipitation (Inch)",
+    y = "Precipitation (Inch)",
     caption = "data from NOAA and Data Montgomery"
   ) +
   theme_minimal()
